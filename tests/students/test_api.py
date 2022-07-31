@@ -33,11 +33,10 @@ def courses_factory():
 @pytest.mark.django_db
 def test_get_first_course(client, courses_factory):
     course = courses_factory(name='Math')
-    response = client.get('/api/v1/courses/')
+    response = client.get('/api/v1/courses/1/')
     data = response.json()
     assert response.status_code == 200
-    assert len(data) == 1
-    assert data[0]['name'] == course.name
+    assert data['name'] == course.name
 
 
 @pytest.mark.django_db
@@ -51,24 +50,24 @@ def test_get_courses_list(client, courses_factory):
 
 @pytest.mark.django_db
 def test_get_filtered_course_of_id(client, courses_factory):
-    courses_factory(_quantity=10)
-    filter_id = '?id=1'
-    response = client.get('/api/v1/courses/' + filter_id)
+    courses = courses_factory(_quantity=10)
+    filters = {'id': courses[0].id}
+    response = client.get('/api/v1/courses/', data=filters)
     data_list = response.json()
     assert response.status_code == 200
     assert len(data_list) == 1
-    assert (data['id'] == 1 for data in data_list)
+    assert (data['id'] == courses[0].id for data in data_list)
 
 
 @pytest.mark.django_db
-def test_get_filtered_course_of_id(client, courses_factory):
+def test_get_filtered_course_of_name(client, courses_factory):
     courses = courses_factory(_quantity=10)
-    tested_name = '?name=' + courses[0].name
-    response = client.get('/api/v1/courses/' + tested_name)
+    filters = {'name': courses[0].name}
+    response = client.get('/api/v1/courses/', data=filters)
     data_list = response.json()
     assert response.status_code == 200
     assert len(data_list) == 1
-    assert (data['name'] == tested_name for data in data_list)
+    assert (data['name'] == courses[0].name for data in data_list)
 
 
 @pytest.mark.django_db
@@ -85,8 +84,9 @@ def test_update_course(client, courses_factory):
     courses = courses_factory(_quantity=10)
     course_id = courses[0].id
     response = client.patch('/api/v1/courses/' + f"{course_id}/", data={'name': 'Python development'}, format='json')
+    data = response.json()
     assert response.status_code == 200
-    assert client.get('/api/v1/courses/' + f"{course_id}/").json()['name'] == 'Python development'
+    assert data['name'] == 'Python development'
 
 
 @pytest.mark.django_db
