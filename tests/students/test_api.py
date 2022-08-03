@@ -33,7 +33,7 @@ def courses_factory():
 @pytest.mark.django_db
 def test_get_first_course(client, courses_factory):
     course = courses_factory(name='Math')
-    response = client.get('/api/v1/courses/1/')
+    response = client.get(f'/api/v1/courses/{course.id}/')
     data = response.json()
     assert response.status_code == 200
     assert data['name'] == course.name
@@ -83,7 +83,7 @@ def test_create_course(client):
 def test_update_course(client, courses_factory):
     courses = courses_factory(_quantity=10)
     course_id = courses[0].id
-    response = client.patch('/api/v1/courses/' + f"{course_id}/", data={'name': 'Python development'}, format='json')
+    response = client.patch(f'/api/v1/courses/{course_id}/', data={'name': 'Python development'}, format='json')
     data = response.json()
     assert response.status_code == 200
     assert data['name'] == 'Python development'
@@ -93,7 +93,7 @@ def test_update_course(client, courses_factory):
 def test_delete_course(client, courses_factory):
     courses = courses_factory(_quantity=10)
     course_id = courses[0].id
-    response = client.delete('/api/v1/courses/' + f'{course_id}/')
+    response = client.delete(f'/api/v1/courses/{course_id}/')
     data = client.get('/api/v1/courses/').json()
     assert response.status_code == 204
     assert len(data) == 9
